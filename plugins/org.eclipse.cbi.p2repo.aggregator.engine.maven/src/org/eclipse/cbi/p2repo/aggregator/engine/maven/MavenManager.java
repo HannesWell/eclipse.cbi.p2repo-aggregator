@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -182,6 +183,9 @@ public class MavenManager {
 		private static final Pattern GITHUB_SCM_PATTERN = Pattern
 				.compile("scm:git:https://github.com/(?<org>[^/]+)/(?<repo>[^/]+?)(.git)?");
 
+		private static final Pattern OLD_ECLIPSE_SCM_PATTERN = Pattern
+				.compile("scm:git:https://git.eclipse.org/c/(?<org>[^/]+)/(?<repo>[^/]+?)(.git)?");
+
 		private final String eclipseSourceReferences;
 
 		public SourceReferenceAnalyzer(String eclipseSourceReferences) {
@@ -200,6 +204,27 @@ public class MavenManager {
 					String path = eclipseSourceReferenceElement.getAttribute("path");
 					String commitId = eclipseSourceReferenceElement.getAttribute("commitId");
 					String value = eclipseSourceReferenceElement.getValue();
+
+					Matcher oldEclipseSCMMatcher = OLD_ECLIPSE_SCM_PATTERN.matcher(value);
+					if (oldEclipseSCMMatcher.matches()) {
+						String org = oldEclipseSCMMatcher.group("org");
+						String repo = oldEclipseSCMMatcher.group("repo");
+						String url = "https://github.com/eclipse-" + org + "/" + repo + ".git";
+						try (InputStream input = new URL(url).openStream()) {
+						} catch (IOException e) {
+							url = null;
+						}
+						if (url == null && repo.startsWith("org.eclipse.")) {
+							url = "https://github.com/eclipse-" + org + "/" + repo.replace("org.eclipse.", "") + ".git";
+							try (InputStream input = new URL(url).openStream()) {
+							} catch (IOException e) {
+								url = null;
+							}
+						}
+						if (url != null) {
+							value = "scm:git:" + url;
+						}
+					}
 
 					handleSourceReference(value, path, commitId);
 
