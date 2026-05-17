@@ -313,10 +313,16 @@ public class MetadataRepositoryStructuredViewBuilder {
 		List<IUPresentation> found = new ArrayList<IUPresentation>();
 		if (rq instanceof IRequiredCapability) {
 			Map<Version, IUPresentation> vps = iuMap.get(((IRequiredCapability) rq).getName());
-			if (vps != null)
-				for (Map.Entry<Version, IUPresentation> vp : vps.entrySet())
-					if (vp.getValue().getInstallableUnit().satisfies(rq))
+			if (vps != null) {
+				for (Map.Entry<Version, IUPresentation> vp : vps.entrySet()) {
+					if (vp.getValue().getInstallableUnit().satisfies(rq)) {
 						found.add(vp.getValue());
+					}
+				}
+				if (!found.isEmpty()) {
+					return found;
+				}
+			}
 		}
 		for (Map<Version, IUPresentation> vps : iuMap.values())
 			for (Map.Entry<Version, IUPresentation> vp : vps.entrySet())

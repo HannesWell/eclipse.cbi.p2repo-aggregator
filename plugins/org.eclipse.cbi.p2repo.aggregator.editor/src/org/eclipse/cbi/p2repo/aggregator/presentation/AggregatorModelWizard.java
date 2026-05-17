@@ -476,9 +476,12 @@ public class AggregatorModelWizard extends Wizard implements INewWizard {
 
 		EList<Configuration> configurations = aggregation.getConfigurations();
 		configurations.add(createConfiguration(OperatingSystem.LINUX, WindowSystem.GTK, Architecture.AARCH64));
+		configurations.add(createConfiguration(OperatingSystem.LINUX, WindowSystem.GTK, Architecture.RISCV64));
+		configurations.add(createConfiguration(OperatingSystem.LINUX, WindowSystem.GTK, Architecture.PPC64LE));
 		configurations.add(createConfiguration(OperatingSystem.LINUX, WindowSystem.GTK, Architecture.X86_64));
 		configurations.add(createConfiguration(OperatingSystem.MAC_OSX, WindowSystem.COCOA, Architecture.AARCH64));
 		configurations.add(createConfiguration(OperatingSystem.MAC_OSX, WindowSystem.COCOA, Architecture.X86_64));
+		configurations.add(createConfiguration(OperatingSystem.WIN32, WindowSystem.WIN32, Architecture.AARCH64));
 		configurations.add(createConfiguration(OperatingSystem.WIN32, WindowSystem.WIN32, Architecture.X86_64));
 
 		ValidationSet validationSet = AggregatorFactory.eINSTANCE.createValidationSet();

@@ -63,9 +63,11 @@ import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.CommandStack;
 import org.eclipse.emf.common.command.CommandStackListener;
+import org.eclipse.emf.common.command.UnexecutableCommand;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.ui.MarkerHelper;
 import org.eclipse.emf.common.ui.URIEditorInput;
 import org.eclipse.emf.common.ui.celleditor.ExtendedDialogCellEditor;
@@ -75,6 +77,7 @@ import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -86,6 +89,9 @@ import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryRegistryImpl;
 import org.eclipse.emf.ecore.util.EContentAdapter;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.FeatureMap;
+import org.eclipse.emf.ecore.util.FeatureMapUtil;
+import org.eclipse.emf.ecore.xml.type.AnyType;
 import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.DeleteCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
@@ -93,10 +99,12 @@ import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emf.edit.domain.IEditingDomainProvider;
 import org.eclipse.emf.edit.provider.AdapterFactoryItemDelegator;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
+import org.eclipse.emf.edit.provider.FeatureMapEntryWrapperItemProvider;
 import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
 import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
 import org.eclipse.emf.edit.provider.IItemPropertySource;
+import org.eclipse.emf.edit.provider.ReflectiveItemProvider;
 import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
 import org.eclipse.emf.edit.provider.resource.ResourceItemProviderAdapterFactory;
 import org.eclipse.emf.edit.provider.resource.ResourceSetItemProvider;
@@ -1960,7 +1968,72 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 		adapterFactory.addAdapterFactory(new P2viewItemProviderAdapterFactory());
 
 		adapterFactory.addAdapterFactory(new P2viewItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory());
+		adapterFactory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory() {
+			ReflectiveItemProvider anyTypeItemProvider = new ReflectiveItemProvider(this) {
+				@Override
+				public String getText(Object object) {
+					var anyType = (AnyType) object;
+					if (anyType.eContainer() == null) {
+						return '<' + anyType.eClass().getName() + '>';
+					}
+					return "";
+				}
+
+				@Override
+				public Object getImage(Object object) {
+					return URI.createURI(AggregatorEditorPlugin.INSTANCE.getImage("full/obj16/element").toString());
+				}
+
+				@Override
+				public Collection<?> getChildren(Object object) {
+					var result = new ArrayList<Object>();
+					var attributeIndex = 0;
+					for (var child : super.getChildren(object)) {
+						if (child instanceof FeatureMapEntryWrapperItemProvider wrapper) {
+							Object value = wrapper.getValue();
+							if (value instanceof FeatureMap.Entry entry) {
+								if (FeatureMapUtil.isText(entry)) {
+									continue;
+								}
+								if (FeatureMapUtil.isProcessingInstruction(entry)) {
+									result.add(0, child);
+									++attributeIndex;
+									continue;
+								}
+								if (entry.getEStructuralFeature() instanceof EAttribute) {
+									result.add(attributeIndex++, child);
+									continue;
+								}
+							}
+						}
+						result.add(child);
+					}
+					return result;
+				}
+
+				@Override
+				public Command createCommand(Object object, EditingDomain domain, Class<? extends Command> commandClass,
+						CommandParameter commandParameter) {
+					return UnexecutableCommand.INSTANCE;
+				}
+			};
+
+			@Override
+			public Adapter createAdapter(Notifier target) {
+				if (target instanceof AnyType anyType) {
+					var resource = anyType.eResource();
+					if (resource != null) {
+						var uri = resource.getURI();
+						if (uri != null) {
+							if ("target".equals(uri.fileExtension())) {
+								return anyTypeItemProvider;
+							}
+						}
+					}
+				}
+				return super.createAdapter(target);
+			}
+		});
 
 		// Create the command stack that will notify this editor as commands are executed.
 		//
@@ -1985,7 +2058,8 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 						if (mostRecentCommand != null) {
 							setSelectionToViewer(mostRecentCommand.getAffectedObjects());
 						}
-						if (propertySheetPage != null && !propertySheetPage.getControl().isDisposed()) {
+						if (propertySheetPage != null && propertySheetPage.getControl() != null
+								&& !propertySheetPage.getControl().isDisposed()) {
 							propertySheetPage.refresh();
 						}
 					}

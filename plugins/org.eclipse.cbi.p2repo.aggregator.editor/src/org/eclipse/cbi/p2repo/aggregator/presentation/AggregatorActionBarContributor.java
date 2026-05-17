@@ -1304,6 +1304,8 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 		List<Action> result = new ArrayList<>();
 		EditingDomain editingDomain = ((IEditingDomainProvider) activeEditorPart).getEditingDomain();
 
+		result.addAll(TargetPlatformConverter.createAddtionalActions(editingDomain, selection));
+
 		MapAllUnitsAction mapAllUnitsAction = new MapAllUnitsAction(selection, editingDomain);
 		if (mapAllUnitsAction.isEnabled()) {
 			result.add(mapAllUnitsAction);
