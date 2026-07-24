@@ -3,6 +3,7 @@
 <target name="Generated from P2 Repository Aggregator">
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+      <unit id="com.ibm.icu" version="0.0.0"/>
       <unit id="json" version="0.0.0"/>
       <unit id="org.apache.commons.logging" version="1.2.0"/>
       <unit id="org.apache.httpcomponents.httpclient" version="0.0.0"/>
