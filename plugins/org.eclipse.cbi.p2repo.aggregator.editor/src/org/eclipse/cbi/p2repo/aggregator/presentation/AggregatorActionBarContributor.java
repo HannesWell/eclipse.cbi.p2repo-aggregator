@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.cbi.p2repo.aggregator.Aggregation;
-import org.eclipse.cbi.p2repo.aggregator.AggregatorFactory;
 import org.eclipse.cbi.p2repo.aggregator.AggregatorPackage;
 import org.eclipse.cbi.p2repo.aggregator.AvailableVersion;
 import org.eclipse.cbi.p2repo.aggregator.Contribution;
@@ -47,6 +47,7 @@ import org.eclipse.cbi.p2repo.aggregator.p2view.IUPresentation;
 import org.eclipse.cbi.p2repo.aggregator.p2view.RequirementWrapper;
 import org.eclipse.cbi.p2repo.aggregator.p2view.impl.MetadataRepositoryStructuredViewImpl;
 import org.eclipse.cbi.p2repo.aggregator.provider.AggregatorEditPlugin;
+import org.eclipse.cbi.p2repo.aggregator.provider.AggregatorItemProviderAdapter;
 import org.eclipse.cbi.p2repo.aggregator.util.AddIUsToContributionCommand;
 import org.eclipse.cbi.p2repo.aggregator.util.AddIUsToCustomCategoryCommand;
 import org.eclipse.cbi.p2repo.aggregator.util.AddIUsToParentRepositoryCommand;
@@ -70,12 +71,14 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.common.command.CompoundCommand;
+import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.ui.viewer.IViewerProvider;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
@@ -777,7 +780,7 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 		}
 	}
 
-	class SortAction<T> extends Action {
+	private static class SortAction<T> extends Action {
 
 		private EditingDomain editingDomain;
 
@@ -785,13 +788,10 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 
 		public SortAction(EditingDomain editingDomain, EList<T> containment, T itemTemplate, String label) {
 			this.editingDomain = editingDomain;
-
 			command = new SortCommand<>(editingDomain, containment, itemTemplate, label);
-
 			setEnabled(command.canExecute());
-
 			setText(label);
-			setImageDescriptor(ImageDescriptor.createFromURL((URL) command.getImage()));
+			setImageDescriptor(ExtendedImageRegistry.getInstance().getImageDescriptor(command.getImage()));
 		}
 
 		@Override
@@ -922,8 +922,6 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 	private IEditorPart lastActiveEditorPart;
 
 	private ISelection lastSelection;
-
-	private boolean aggregatorSelected;
 
 	/**
 	 * This creates an instance of the contributor.
@@ -1279,24 +1277,47 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 			});
 		}
 
-		if (aggregatorSelected) {
-			EditingDomain editingDomain = ((IEditingDomainProvider) activeEditorPart).getEditingDomain();
+		if (lastSelection instanceof StructuredSelection structuredSelection && structuredSelection.size() == 1
+				&& AdapterFactoryEditingDomain
+						.unwrap(structuredSelection.getFirstElement()) instanceof EObject selectedObject) {
+			var sortActions = new TreeMap<String, IAction>();
+			var editingDomain = (AdapterFactoryEditingDomain) ((IEditingDomainProvider) activeEditorPart)
+					.getEditingDomain();
+			AdapterFactory adapterFactory = editingDomain.getAdapterFactory();
+			for (var eReference : List.of( //
+					AggregatorPackage.Literals.AGGREGATION__CONFIGURATIONS,
+					AggregatorPackage.Literals.AGGREGATION__CONTACTS,
+					AggregatorPackage.Literals.AGGREGATION__CUSTOM_CATEGORIES,
+					AggregatorPackage.Literals.AGGREGATION__VALIDATION_SETS,
+					AggregatorPackage.Literals.CONTRIBUTION__CONTACTS,
+					AggregatorPackage.Literals.CONTRIBUTION__REPOSITORIES,
+					AggregatorPackage.Literals.CUSTOM_CATEGORY__FEATURES,
+					AggregatorPackage.Literals.MAPPED_REPOSITORY__BUNDLES,
+					AggregatorPackage.Literals.MAPPED_REPOSITORY__CATEGORIES,
+					AggregatorPackage.Literals.MAPPED_REPOSITORY__FEATURES,
+					AggregatorPackage.Literals.MAPPED_REPOSITORY__PRODUCTS,
+					AggregatorPackage.Literals.VALIDATION_SET__CONTRIBUTIONS,
+					AggregatorPackage.Literals.VALIDATION_SET__VALIDATION_REPOSITORIES)) {
+				if (selectedObject.eClass().getEAllReferences().contains(eReference)) {
+					var itemTemplate = EcoreUtil.create(eReference.getEReferenceType());
+					var labelProvider = (IItemLabelProvider) adapterFactory.adapt(itemTemplate,
+							IItemLabelProvider.class);
+					if (labelProvider instanceof AggregatorItemProviderAdapter featureTextProvider) {
+						var label = featureTextProvider.getFeatureText(eReference);
+						@SuppressWarnings("unchecked")
+						EList<EObject> values = (EList<EObject>) selectedObject.eGet(eReference);
+						sortActions.put(label, new SortAction<EObject>(editingDomain, values, itemTemplate, label));
+					}
+				}
+			}
 
-			IAction sortConfigurationsAction = new SortAction<>(editingDomain, aggregation.getConfigurations(),
-					AggregatorFactory.eINSTANCE.createConfiguration(), "Configurations");
-			IAction sortContactsAction = new SortAction<>(editingDomain, aggregation.getContacts(),
-					AggregatorFactory.eINSTANCE.createContact(), "Contacts");
-			IAction sortContributionsAction = new SortAction<>(editingDomain, aggregation.getValidationSets(),
-					AggregatorFactory.eINSTANCE.createValidationSet(), "Contributions");
-			IAction sortCustomCategoriesAction = new SortAction<>(editingDomain, aggregation.getCustomCategories(),
-					AggregatorFactory.eINSTANCE.createCustomCategory(), "Custom Categories");
-
-			MenuManager submenuManager = new MenuManager("Sort");
-			submenuManager.add(sortConfigurationsAction);
-			submenuManager.add(sortContactsAction);
-			submenuManager.add(sortContributionsAction);
-			submenuManager.add(sortCustomCategoriesAction);
-			menuManager.insertBefore("edit", submenuManager);
+			if (!sortActions.isEmpty()) {
+				var submenuManager = new MenuManager("Sort");
+				for (var sortAction : sortActions.values()) {
+					submenuManager.add(sortAction);
+				}
+				menuManager.insertBefore("edit", submenuManager);
+			}
 		}
 	}
 
@@ -1469,9 +1490,7 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 				reloadOrCancelRepoAction.initMetadataRepositoryReferences();
 				Aggregation aggregation = getAggregation();
 
-				aggregatorSelected = false;
 				if (selectedItems.size() == 1 && selectedItems.get(0).equals(aggregation)) {
-					aggregatorSelected = true;
 					reloadOrCancelRepoAction.setLoadText("Reload All Repositories");
 					reloadOrCancelRepoActionVisible = true;
 					ResourceSet resourceSet = ((AggregationImpl) aggregation).eResource().getResourceSet();

@@ -32,39 +32,37 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 		public AggregatorItemPropertyDescriptor(AdapterFactory adapterFactory, ResourceLocator resourceLocator,
 				String displayName, String description, EStructuralFeature feature, boolean isSettable,
 				boolean multiLine, boolean sortChoices, Object staticImage, String category, String[] filterFlags) {
-			super(
-				adapterFactory, resourceLocator, displayName, description, feature, isSettable, multiLine, sortChoices,
-				staticImage, category, filterFlags);
+			super(adapterFactory, resourceLocator, displayName, description, feature, isSettable, multiLine,
+					sortChoices, staticImage, category, filterFlags);
 		}
 
 		@Override
 		public boolean canSetProperty(Object object) {
 			boolean result = super.canSetProperty(object);
 
-			if(result)
-				if(parentsEnabled(object)) {
-					if(object instanceof EnabledStatusProvider)
-						result = ((EnabledStatusProvider) object).isEnabled() ||
-								AggregatorPackage.Literals.ENABLED_STATUS_PROVIDER__ENABLED.getName().equals(
-									getId(object));
-				}
-				else
+			if (result)
+				if (parentsEnabled(object)) {
+					if (object instanceof EnabledStatusProvider)
+						result = ((EnabledStatusProvider) object).isEnabled()
+								|| AggregatorPackage.Literals.ENABLED_STATUS_PROVIDER__ENABLED.getName()
+										.equals(getId(object));
+				} else
 					result = false;
 
 			return result;
 		}
 
 		private boolean parentsEnabled(Object object) {
-			if(object instanceof EObject) {
+			if (object instanceof EObject) {
 				EObject eObject = (EObject) object;
 
 				EObject eContainer = eObject.eContainer();
 
-				if(eContainer == null)
+				if (eContainer == null)
 					return true;
 
-				if(eContainer instanceof EnabledStatusProvider)
-					if(!((EnabledStatusProvider) eContainer).isEnabled())
+				if (eContainer instanceof EnabledStatusProvider)
+					if (!((EnabledStatusProvider) eContainer).isEnabled())
 						return false;
 
 				return parentsEnabled(eContainer);
@@ -76,7 +74,7 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 		@Override
 		public void setPropertyValue(Object object, Object value) {
 			// Replaces empty string with null
-			if(value instanceof String)
+			if (value instanceof String)
 				value = StringUtils.trimmedOrNull((String) value);
 
 			super.setPropertyValue(object, value);
@@ -85,12 +83,12 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 	}
 
 	public static String getTooltipText(Object object, ItemProviderAdapter itemProvider) {
-		if(!(object instanceof StatusProvider))
+		if (!(object instanceof StatusProvider))
 			return null;
 
 		Status status = ((StatusProvider) object).getStatus();
 
-		if(status.getMessage() == null)
+		if (status.getMessage() == null)
 			return null;
 
 		StringBuilder sb = new StringBuilder();
@@ -115,9 +113,8 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 			ResourceLocator resourceLocator, String displayName, String description, EStructuralFeature feature,
 			boolean isSettable, boolean multiLine, boolean sortChoices, Object staticImage, String category,
 			String[] filterFlags) {
-		return new AggregatorItemPropertyDescriptor(
-			adapterFactory, resourceLocator, displayName, description, feature, isSettable, multiLine, sortChoices,
-			staticImage, category, filterFlags);
+		return new AggregatorItemPropertyDescriptor(adapterFactory, resourceLocator, displayName, description, feature,
+				isSettable, multiLine, sortChoices, staticImage, category, filterFlags);
 	}
 
 	/**
@@ -125,10 +122,8 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 	 */
 	@Override
 	public Object getForeground(Object object) {
-		if(object instanceof EnabledStatusProvider)
-			return ((EnabledStatusProvider) object).isBranchEnabled()
-					? null
-					: IItemColorProvider.GRAYED_OUT_COLOR;
+		if (object instanceof EnabledStatusProvider)
+			return ((EnabledStatusProvider) object).isBranchEnabled() ? null : IItemColorProvider.GRAYED_OUT_COLOR;
 
 		return null;
 	}
@@ -142,21 +137,28 @@ public class AggregatorItemProviderAdapter extends ItemProviderAdapter implement
 	@Override
 	protected Object overlayImage(Object object, Object image) {
 		image = super.overlayImage(object, image);
-		if(object instanceof EnabledStatusProvider && !((EnabledStatusProvider) object).isBranchEnabled())
+		if (object instanceof EnabledStatusProvider && !((EnabledStatusProvider) object).isBranchEnabled())
 			return image;
 
 		StatusProvider sp = (StatusProvider) getRootAdapterFactory().adapt(object, StatusProvider.class);
 
-		if(sp != null) {
+		if (sp != null) {
 			StatusCode sc = sp.getStatus().getCode();
 
-			if(sc == StatusCode.WAITING || sc == StatusCode.BROKEN)
-				image = new OverlaidImage(new Object[] { image, getResourceLocator().getImage(sc == StatusCode.WAITING
-						? "full/ovr16/Loading"
-						: "full/ovr16/Error") }, OverlaidImage.BASIC_BOTTOM_RIGHT);
+			if (sc == StatusCode.WAITING || sc == StatusCode.BROKEN)
+				image = new OverlaidImage(
+						new Object[] { image,
+								getResourceLocator().getImage(
+										sc == StatusCode.WAITING ? "full/ovr16/Loading" : "full/ovr16/Error") },
+						OverlaidImage.BASIC_BOTTOM_RIGHT);
 		}
 
 		return image;
+	}
+
+	@Override
+	public String getFeatureText(Object feature) {
+		return super.getFeatureText(feature);
 	}
 
 }

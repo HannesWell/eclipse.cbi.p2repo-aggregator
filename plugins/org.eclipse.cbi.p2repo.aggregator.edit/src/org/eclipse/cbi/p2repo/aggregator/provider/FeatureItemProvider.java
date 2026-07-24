@@ -21,6 +21,7 @@ import org.eclipse.cbi.p2repo.aggregator.MappedRepository;
 import org.eclipse.cbi.p2repo.aggregator.util.SpecialQueries;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
@@ -86,8 +87,11 @@ public class FeatureItemProvider extends MappedUnitItemProvider {
 	 */
 	@Override
 	public Object getImage(Object object) {
-		return overlayImage(object, getResourceLocator().getImage("full/obj16/Feature"
-				+ (!((Feature) object).isBranchDisabledOrMappedRepositoryBroken() ? "" : "Disabled")));
+		Feature feature = (Feature) object;
+		boolean branchDisabledOrMappedRepositoryBroken = feature.isBranchDisabledOrMappedRepositoryBroken();
+		boolean enabled = !branchDisabledOrMappedRepositoryBroken
+				|| ((EObject) feature).eContainer() == null && !((EObject) feature).eIsProxy();
+		return overlayImage(object, getResourceLocator().getImage("full/obj16/Feature" + (enabled ? "" : "Disabled")));
 	}
 
 	/**

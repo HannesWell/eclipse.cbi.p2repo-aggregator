@@ -40,18 +40,17 @@ public class SortCommand<T> extends AbstractCommand {
 		@Override
 		public int compare(T o1, T o2) {
 
-			if(o1 == null) {
-				if(o2 == null)
+			if (o1 == null) {
+				if (o2 == null)
 					return 0;
 				return -1;
-			}
-			else if(o2 == null)
+			} else if (o2 == null)
 				return 1;
 			else {
 				int result = labelProvider.getText(o1).compareTo(labelProvider.getText(o2));
 
 				// when two different instances have the same label, sort them according to their hash
-				if(result == 0)
+				if (result == 0)
 					result = System.identityHashCode(o1) - System.identityHashCode(o2);
 
 				return result;
@@ -75,23 +74,15 @@ public class SortCommand<T> extends AbstractCommand {
 		this.containment = containment;
 		this.itemTemplate = itemTemplate;
 
-		labelProvider = (IItemLabelProvider) ((AdapterFactoryEditingDomain) editingDomain).getAdapterFactory().adapt(
-			itemTemplate, IItemLabelProvider.class);
+		labelProvider = (IItemLabelProvider) ((AdapterFactoryEditingDomain) editingDomain).getAdapterFactory()
+				.adapt(itemTemplate, IItemLabelProvider.class);
 
-		if(labelProvider == null)
+		if (labelProvider == null)
 			throw new IllegalArgumentException(itemTemplate.getClass() + " does not provide label");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.eclipse.emf.common.command.Command#execute()
-	 */
 	@Override
 	public void execute() {
-		sortedSet = new TreeSet<T>(new LabelHashComparator(labelProvider));
-		sortedSet.addAll(containment);
-
 		originalList = new ArrayList<T>();
 		originalList.addAll(containment);
 
@@ -105,7 +96,9 @@ public class SortCommand<T> extends AbstractCommand {
 
 	@Override
 	protected boolean prepare() {
-		return containment.size() > 1;
+		sortedSet = new TreeSet<T>(new LabelHashComparator(labelProvider));
+		sortedSet.addAll(containment);
+		return !new ArrayList<>(sortedSet).equals(containment);
 	}
 
 	@Override
