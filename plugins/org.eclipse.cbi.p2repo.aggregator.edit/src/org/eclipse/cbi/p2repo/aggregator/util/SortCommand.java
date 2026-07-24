@@ -14,10 +14,9 @@ package org.eclipse.cbi.p2repo.aggregator.util;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.eclipse.emf.common.command.AbstractCommand;
+import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
@@ -29,17 +28,16 @@ import org.eclipse.emf.edit.provider.IItemLabelProvider;
  */
 public class SortCommand<T> extends AbstractCommand {
 
-	class LabelHashComparator implements Comparator<T> {
+	class LabelComparator implements Comparator<T> {
 
-		private IItemLabelProvider labelProvider;
+		private final IItemLabelProvider labelProvider;
 
-		public LabelHashComparator(IItemLabelProvider labelProvider) {
+		public LabelComparator(IItemLabelProvider labelProvider) {
 			this.labelProvider = labelProvider;
 		}
 
 		@Override
 		public int compare(T o1, T o2) {
-
 			if (o1 == null) {
 				if (o2 == null)
 					return 0;
@@ -47,13 +45,7 @@ public class SortCommand<T> extends AbstractCommand {
 			} else if (o2 == null)
 				return 1;
 			else {
-				int result = labelProvider.getText(o1).compareTo(labelProvider.getText(o2));
-
-				// when two different instances have the same label, sort them according to their hash
-				if (result == 0)
-					result = System.identityHashCode(o1) - System.identityHashCode(o2);
-
-				return result;
+				return labelProvider.getText(o1).compareTo(labelProvider.getText(o2));
 			}
 		}
 	};
@@ -62,7 +54,7 @@ public class SortCommand<T> extends AbstractCommand {
 
 	private List<T> originalList;
 
-	private Set<T> sortedSet;
+	private List<T> sortedList;
 
 	private T itemTemplate;
 
@@ -83,11 +75,8 @@ public class SortCommand<T> extends AbstractCommand {
 
 	@Override
 	public void execute() {
-		originalList = new ArrayList<T>();
-		originalList.addAll(containment);
-
-		containment.clear();
-		containment.addAll(sortedSet);
+		originalList = new ArrayList<T>(containment);
+		ECollections.setEList(containment, sortedList);
 	}
 
 	public Object getImage() {
@@ -96,20 +85,18 @@ public class SortCommand<T> extends AbstractCommand {
 
 	@Override
 	protected boolean prepare() {
-		sortedSet = new TreeSet<T>(new LabelHashComparator(labelProvider));
-		sortedSet.addAll(containment);
-		return !new ArrayList<>(sortedSet).equals(containment);
+		sortedList = new ArrayList<>(containment);
+		sortedList.sort(new LabelComparator(labelProvider));
+		return !sortedList.equals(containment);
 	}
 
 	@Override
 	public void redo() {
-		containment.clear();
-		containment.addAll(sortedSet);
+		ECollections.setEList(containment, sortedList);
 	}
 
 	@Override
 	public void undo() {
-		containment.clear();
-		containment.addAll(originalList);
+		ECollections.setEList(containment, originalList);
 	}
 }
