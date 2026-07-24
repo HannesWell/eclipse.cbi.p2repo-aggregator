@@ -1292,6 +1292,7 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 					AggregatorPackage.Literals.CONTRIBUTION__CONTACTS,
 					AggregatorPackage.Literals.CONTRIBUTION__REPOSITORIES,
 					AggregatorPackage.Literals.CUSTOM_CATEGORY__FEATURES,
+					AggregatorPackage.Literals.FEATURE__CATEGORIES,
 					AggregatorPackage.Literals.MAPPED_REPOSITORY__BUNDLES,
 					AggregatorPackage.Literals.MAPPED_REPOSITORY__CATEGORIES,
 					AggregatorPackage.Literals.MAPPED_REPOSITORY__FEATURES,
