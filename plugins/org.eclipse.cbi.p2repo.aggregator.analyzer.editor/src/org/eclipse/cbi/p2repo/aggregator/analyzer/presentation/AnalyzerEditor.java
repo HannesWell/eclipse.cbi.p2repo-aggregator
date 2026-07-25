@@ -258,6 +258,7 @@ import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.zest.core.viewers.GraphViewer;
@@ -1503,7 +1504,8 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 						return contributionAnalysisItemProvider;
 					}
 				}, adapterFactory });
-		AdapterFactoryContentProvider contentProvider = new AdapterFactoryContentProvider(composedAdapterFactory);
+		AdapterFactoryContentProvider contentProvider = new AdapterFactoryContentProviderWithoutSearchProperties(
+				composedAdapterFactory);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setLabelProvider(createLabelProvider(treeViewer));
 
@@ -4182,6 +4184,35 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			return stringWriter.toString();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private static class AdapterFactoryContentProviderWithoutSearchProperties extends AdapterFactoryContentProvider {
+		private long lastCheck;
+		private boolean noProperties;
+
+		public AdapterFactoryContentProviderWithoutSearchProperties(AdapterFactory adapterFactory) {
+			super(adapterFactory);
+		}
+
+		@Override
+		public IPropertySource getPropertySource(Object object) {
+			long check = System.currentTimeMillis();
+			if (check - lastCheck > 1000) {
+				lastCheck = check;
+				noProperties = false;
+				StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+				for (StackTraceElement element : stackTrace) {
+					if (element.getClassName().contains("FindAndReplaceTarget")) {
+						noProperties = true;
+						return null;
+					}
+				}
+			} else if (noProperties) {
+				lastCheck = check;
+				return null;
+			}
+			return super.getPropertySource(object);
 		}
 	}
 }
