@@ -92,6 +92,7 @@ import org.eclipse.emf.edit.ui.action.CreateChildAction;
 import org.eclipse.emf.edit.ui.action.CreateSiblingAction;
 import org.eclipse.emf.edit.ui.action.EditingDomainActionBarContributor;
 import org.eclipse.emf.edit.ui.action.ExpandAllAction;
+import org.eclipse.emf.edit.ui.action.FindAction;
 import org.eclipse.emf.edit.ui.action.LoadResourceAction;
 import org.eclipse.emf.edit.ui.action.RevertAction;
 import org.eclipse.emf.edit.ui.provider.ExtendedImageRegistry;
@@ -923,6 +924,14 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 
 	private ISelection lastSelection;
 
+	private final IAction findIUAction = new Action(
+			AggregatorEditorPlugin.INSTANCE.getString("_UI_FindIUDialog_action")) {
+		public void run() {
+			FindIUDialog dialog = new FindIUDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+			dialog.open();
+		}
+	};
+
 	/**
 	 * This creates an instance of the contributor.
 	 *
@@ -941,6 +950,8 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 		verifyRepoAction = new BuildAggregationAction(ActionType.VALIDATE);
 		buildRepoAction = new BuildAggregationAction(ActionType.BUILD);
 		cleanBuildRepoAction = new BuildAggregationAction(ActionType.CLEAN_BUILD);
+		findAction = FindAction.create();
+		findAction.setId(findAction.getClass().getName());
 		revertAction = new RevertAction();
 		expandAllAction = new ExpandAllAction();
 		collapseAllAction = new CollapseAllAction();
@@ -1307,7 +1318,7 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 						var label = featureTextProvider.getFeatureText(eReference);
 						@SuppressWarnings("unchecked")
 						EList<EObject> values = (EList<EObject>) selectedObject.eGet(eReference);
-						sortActions.put(label, new SortAction<EObject>(editingDomain, values, itemTemplate, label));
+						sortActions.put(label, new SortAction<>(editingDomain, values, itemTemplate, label));
 					}
 				}
 			}
@@ -1320,6 +1331,8 @@ public class AggregatorActionBarContributor extends EditingDomainActionBarContri
 				menuManager.insertBefore("edit", submenuManager);
 			}
 		}
+
+		menuManager.insertAfter(findAction.getId(), findIUAction);
 	}
 
 	private List<Action> createAddtionalActions(List<?> selection) {

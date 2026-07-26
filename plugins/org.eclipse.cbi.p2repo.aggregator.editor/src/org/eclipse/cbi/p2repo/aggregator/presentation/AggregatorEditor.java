@@ -12,6 +12,7 @@ package org.eclipse.cbi.p2repo.aggregator.presentation;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 
 import org.eclipse.cbi.p2repo.aggregator.Aggregation;
@@ -120,6 +122,7 @@ import org.eclipse.emf.edit.ui.provider.PropertySource;
 import org.eclipse.emf.edit.ui.provider.UnwrappingSelectionProvider;
 import org.eclipse.emf.edit.ui.util.EditUIMarkerHelper;
 import org.eclipse.emf.edit.ui.util.EditUIUtil;
+import org.eclipse.emf.edit.ui.util.FindAndReplaceTarget;
 import org.eclipse.emf.edit.ui.util.IRevertablePart;
 import org.eclipse.emf.edit.ui.view.ExtendedPropertySheetPage;
 import org.eclipse.equinox.p2.metadata.VersionRange;
@@ -131,6 +134,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -1163,7 +1167,38 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 			setCurrentViewer(selectionViewer);
 
 			selectionViewer.setUseHashlookup(true);
-			selectionViewer.setContentProvider(new AdapterFactoryContentProvider(adapterFactory));
+			selectionViewer.setContentProvider(new AdapterFactoryContentProvider(adapterFactory) {
+				final IFindReplaceTarget findAndReplaceTarget = AggregatorEditor.this
+						.getAdapter(IFindReplaceTarget.class);
+
+				final BooleanSupplier searchProperties = getSearchTypeSupplier();
+
+				private BooleanSupplier getSearchTypeSupplier() {
+					try {
+						Field declaredField = findAndReplaceTarget.getClass().getDeclaredField("searchType");
+						declaredField.setAccessible(true);
+						return () -> {
+							try {
+								Object searchType = declaredField.get(findAndReplaceTarget);
+								return searchType != null && !searchType.toString().equals("LABEL");
+							} catch (Exception ex) {
+								return true;
+							}
+						};
+					} catch (Exception ex) {
+						return () -> true;
+					}
+				}
+
+				@Override
+				public IPropertySource getPropertySource(Object object) {
+					if (!searchProperties.getAsBoolean()) {
+						return null;
+					}
+					return super.getPropertySource(object);
+				}
+			});
+
 			selectionViewer.setLabelProvider(
 					new AdapterFactoryLabelProvider.FontAndColorProvider(adapterFactory, selectionViewer));
 			selectionViewer.setInput(editingDomain.getResourceSet());
@@ -1442,6 +1477,8 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 			return key.cast(getPropertySheetPage());
 		} else if (key.equals(IGotoMarker.class)) {
 			return key.cast(this);
+		} else if (key.equals(IFindReplaceTarget.class)) {
+			return FindAndReplaceTarget.getAdapter(key, this, AggregatorEditorPlugin.getPlugin());
 		} else {
 			return super.getAdapter(key);
 		}
@@ -1986,7 +2023,7 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 
 				@Override
 				public Collection<?> getChildren(Object object) {
-					var result = new ArrayList<Object>();
+					var result = new ArrayList<>();
 					var attributeIndex = 0;
 					for (var child : super.getChildren(object)) {
 						if (child instanceof FeatureMapEntryWrapperItemProvider wrapper) {

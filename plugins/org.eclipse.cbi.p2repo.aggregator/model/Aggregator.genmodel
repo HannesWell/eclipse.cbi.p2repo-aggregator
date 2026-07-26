@@ -14,7 +14,8 @@
     testsPluginID="org.eclipse.cbi.p2repo.aggregator.editor" colorProviders="true"
     fontProviders="true" language="" packedEnums="true" usedGenPackages="../../org.eclipse.cbi.p2repo.p2/model/p2.genmodel#//p2"
     interfaceNamePattern="" classNamePattern="" importOrganizing="true" cleanup="true"
-    autoResizeProperties="true" expandAllAction="true" collapseAllAction="true" revertAction="true">
+    autoResizeProperties="true" findAction="true" expandAllAction="true" collapseAllAction="true"
+    revertAction="true">
   <foreignModel>Aggregator.ecore</foreignModel>
   <genPackages prefix="Aggregator" basePackage="org.eclipse.cbi.p2repo" resource="XMI"
       disposableProviderFactory="true" generateExampleClass="false" multipleEditorPages="false"

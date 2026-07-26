@@ -150,7 +150,7 @@ public class PropertyItemProvider extends AggregatorItemProviderAdapter
 	@Override
 	public String getText(Object object) {
 		Property property = (Property) object;
-		return property.getKey() + " -> " + property.getValue();
+		return property.getKey() + " -> " + crop(property.getValue());
 	}
 
 	/**

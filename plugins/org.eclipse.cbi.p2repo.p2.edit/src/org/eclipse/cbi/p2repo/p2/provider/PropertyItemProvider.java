@@ -13,6 +13,7 @@ package org.eclipse.cbi.p2repo.p2.provider;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.cbi.p2repo.p2.P2Package;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -149,7 +150,7 @@ public class PropertyItemProvider extends ItemProviderAdapter implements IEditin
 	@Override
 	public String getText(Object object) {
 		Map.Entry<?, ?> property = (Map.Entry<?, ?>) object;
-		return "" + property.getKey() + " -> " + property.getValue();
+		return "" + property.getKey() + " -> " + crop(Objects.toString(property.getValue()));
 	}
 
 	/**
