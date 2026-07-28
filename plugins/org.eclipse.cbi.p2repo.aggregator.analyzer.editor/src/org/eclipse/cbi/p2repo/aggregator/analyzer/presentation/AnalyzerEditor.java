@@ -13,6 +13,7 @@ package org.eclipse.cbi.p2repo.aggregator.analyzer.presentation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -100,6 +101,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.draw2d.ConnectionRouter;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
@@ -190,6 +192,7 @@ import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -220,6 +223,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -262,9 +267,10 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.zest.core.viewers.GraphViewer;
-import org.eclipse.zest.core.viewers.IConnectionStyleProvider;
-import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
+import org.eclipse.zest.core.viewers.decorators.GraphLabelDecorator;
+import org.eclipse.zest.core.viewers.decorators.IConnectionStyleDecorator;
+import org.eclipse.zest.core.viewers.decorators.IEntityStyleDecorator;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.eclipse.zest.layouts.algorithms.AbstractLayoutAlgorithm;
@@ -1217,6 +1223,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 
 		createPagesGen();
 
+		ExpandHandler.addExpandHandler(selectionViewer.getTree());
 		selectionViewer.setLabelProvider(createLabelProvider(selectionViewer));
 
 		viewers.put(selectionViewer.getControl(), selectionViewer);
@@ -1464,6 +1471,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			IMenuListener menuListener) {
 		Tree tree = new Tree(parent, SWT.MULTI);
 		TreeViewer treeViewer = new TreeViewer(tree);
+		ExpandHandler.addExpandHandler(tree);
 
 		treeViewer.setAutoExpandLevel(2);
 		treeViewer.setUseHashlookup(true);
@@ -2688,8 +2696,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 
 		long now = System.currentTimeMillis();
 
-		class MyLabelProvider extends AdapterFactoryLabelProvider.FontProvider
-				implements IConnectionStyleProvider, IEntityStyleProvider {
+		class MyLabelProvider extends AdapterFactoryLabelProvider.FontProvider {
 			public MyLabelProvider(AdapterFactory adapterFactory) {
 				super(adapterFactory, font);
 			}
@@ -2732,11 +2739,6 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			}
 
 			@Override
-			public int getConnectionStyle(Object rel) {
-				return ZestStyles.CONNECTIONS_DIRECTED;
-			}
-
-			@Override
 			public Font getFont(Object element) {
 				Font font = super.getFont(element);
 				AtomicInteger usageCount = usageCounts.get(element);
@@ -2750,6 +2752,15 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 							URI.createURI("font:///+" + count + "/normal"));
 				}
 				return font;
+			}
+		}
+
+		class MyGraphLabelDecorator extends GraphLabelDecorator
+				implements IConnectionStyleDecorator, IEntityStyleDecorator {
+
+			@Override
+			public int getConnectionStyle(Object rel) {
+				return ZestStyles.CONNECTIONS_DIRECTED;
 			}
 
 			@Override
@@ -2797,7 +2808,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 
 			@Override
 			public Color getBorderColor(Object entity) {
-				return getBackgroundColour(entity);
+				return getBackgroundColor(entity);
 			}
 
 			@Override
@@ -2815,7 +2826,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			}
 
 			@Override
-			public Color getBackgroundColour(Object entity) {
+			public Color getBackgroundColor(Object entity) {
 				if (entity instanceof ContributionAnalysis) {
 					Contribution contribution = ((ContributionAnalysis) entity).getContribution();
 					if (contribution != null && !contribution.isEnabled()) {
@@ -2831,7 +2842,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			}
 
 			@Override
-			public Color getForegroundColour(Object entity) {
+			public Color getForegroundColor(Object entity) {
 				if (entity instanceof ContributionAnalysis) {
 					long lastModified = ((ContributionAnalysis) entity).getLastModified();
 					if (lastModified != Long.MIN_VALUE) {
@@ -2853,10 +2864,16 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			public boolean fisheyeNode(Object entity) {
 				return false;
 			}
+
+			@Override
+			public ConnectionRouter getRouter(Object rel) {
+				return null;
+			}
 		}
 
 		MyLabelProvider labelProvider = new MyLabelProvider(adapterFactory);
-		graphViewer.setLabelProvider(labelProvider);
+		MyGraphLabelDecorator graphDecorator = new MyGraphLabelDecorator();
+		graphViewer.setLabelProvider(new DecoratingLabelProvider(labelProvider, graphDecorator));
 
 		graphViewer.setContentProvider(contentProvider);
 
@@ -4213,6 +4230,35 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 				return null;
 			}
 			return super.getPropertySource(object);
+		}
+	}
+
+	private static class ExpandHandler {
+		private static final Method TOGGLE_EXPAND_ONE_LEVEL;
+		static {
+			Method method = null;
+			try {
+				method = CommonPlugin.loadClass("org.eclipse.oomph.ui", "org.eclipse.oomph.ui.UIUtil")
+						.getMethod("toggleExpandOneLevel", Tree.class, boolean.class, int.class);
+			} catch (Throwable throwable) {
+			}
+			TOGGLE_EXPAND_ONE_LEVEL = method;
+		}
+
+		private static void addExpandHandler(Tree tree) {
+			if (TOGGLE_EXPAND_ONE_LEVEL != null) {
+				tree.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyReleased(KeyEvent e) {
+						if (e.keyCode == SWT.CR) {
+							try {
+								TOGGLE_EXPAND_ONE_LEVEL.invoke(null, tree, e.stateMask == SWT.NONE, 2000);
+							} catch (Throwable throwable) {
+							}
+						}
+					}
+				});
+			}
 		}
 	}
 }

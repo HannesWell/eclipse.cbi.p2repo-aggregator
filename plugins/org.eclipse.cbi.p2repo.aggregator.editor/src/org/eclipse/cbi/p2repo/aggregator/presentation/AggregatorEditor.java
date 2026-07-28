@@ -13,6 +13,7 @@ package org.eclipse.cbi.p2repo.aggregator.presentation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,6 +162,8 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Point;
@@ -1079,6 +1082,8 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 	@Override
 	public void createPages() {
 		createPagesGen();
+
+		ExpandHandler.addExpandHandler(selectionViewer.getTree());
 
 		Runnable showPropertiesView = () -> {
 			try {
@@ -2567,6 +2572,35 @@ public class AggregatorEditor extends MultiPageEditorPart implements IEditingDom
 			}
 		}
 		return null;
+	}
+
+	private static class ExpandHandler {
+		private static final Method TOGGLE_EXPAND_ONE_LEVEL;
+		static {
+			Method method = null;
+			try {
+				method = CommonPlugin.loadClass("org.eclipse.oomph.ui", "org.eclipse.oomph.ui.UIUtil")
+						.getMethod("toggleExpandOneLevel", Tree.class, boolean.class, int.class);
+			} catch (Throwable throwable) {
+			}
+			TOGGLE_EXPAND_ONE_LEVEL = method;
+		}
+
+		private static void addExpandHandler(Tree tree) {
+			if (TOGGLE_EXPAND_ONE_LEVEL != null) {
+				tree.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyReleased(KeyEvent e) {
+						if (e.keyCode == SWT.CR) {
+							try {
+								TOGGLE_EXPAND_ONE_LEVEL.invoke(null, tree, e.stateMask == SWT.NONE, 2000);
+							} catch (Throwable throwable) {
+							}
+						}
+					}
+				});
+			}
+		}
 	}
 
 }
