@@ -240,7 +240,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
-	public EAttribute getAnalysis_Tags() {
+	public EAttribute getAnalysis_IgnoreMajorVersionDuplicates() {
 		return (EAttribute) analysisEClass.getEStructuralFeatures().get(3);
 	}
 
@@ -250,7 +250,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
-	public EAttribute getAnalysis_Levels() {
+	public EAttribute getAnalysis_Tags() {
 		return (EAttribute) analysisEClass.getEStructuralFeatures().get(4);
 	}
 
@@ -260,7 +260,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
-	public EAttribute getAnalysis_LayoutWidth() {
+	public EAttribute getAnalysis_Levels() {
 		return (EAttribute) analysisEClass.getEStructuralFeatures().get(5);
 	}
 
@@ -270,7 +270,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
-	public EAttribute getAnalysis_LayoutHeight() {
+	public EAttribute getAnalysis_LayoutWidth() {
 		return (EAttribute) analysisEClass.getEStructuralFeatures().get(6);
 	}
 
@@ -280,7 +280,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
-	public EAttribute getAnalysis_GitRepositoryFilters() {
+	public EAttribute getAnalysis_LayoutHeight() {
 		return (EAttribute) analysisEClass.getEStructuralFeatures().get(7);
 	}
 
@@ -290,8 +290,18 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 * @generated
 	 */
 	@Override
+	public EAttribute getAnalysis_GitRepositoryFilters() {
+		return (EAttribute) analysisEClass.getEStructuralFeatures().get(8);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public EReference getAnalysis_Aggregation() {
-		return (EReference) analysisEClass.getEStructuralFeatures().get(8);
+		return (EReference) analysisEClass.getEStructuralFeatures().get(9);
 	}
 
 	/**
@@ -301,7 +311,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 	 */
 	@Override
 	public EReference getAnalysis_Contributions() {
-		return (EReference) analysisEClass.getEStructuralFeatures().get(9);
+		return (EReference) analysisEClass.getEStructuralFeatures().get(10);
 	}
 
 	/**
@@ -848,6 +858,7 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 		createEAttribute(analysisEClass, ANALYSIS__RELEASE_DATE);
 		createEAttribute(analysisEClass, ANALYSIS__EXCLUSION);
 		createEAttribute(analysisEClass, ANALYSIS__SHOW_TAGS);
+		createEAttribute(analysisEClass, ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES);
 		createEAttribute(analysisEClass, ANALYSIS__TAGS);
 		createEAttribute(analysisEClass, ANALYSIS__LEVELS);
 		createEAttribute(analysisEClass, ANALYSIS__LAYOUT_WIDTH);
@@ -964,6 +975,9 @@ public class AnalyzerPackageImpl extends EPackageImpl implements AnalyzerPackage
 				!IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getAnalysis_ShowTags(), theXMLTypePackage.getBoolean(), "showTags", null, 0, 1, Analysis.class,
 				!IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getAnalysis_IgnoreMajorVersionDuplicates(), theXMLTypePackage.getBoolean(),
+				"ignoreMajorVersionDuplicates", null, 0, 1, Analysis.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
+				!IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getAnalysis_Tags(), ecorePackage.getEString(), "tags", null, 0, -1, Analysis.class,
 				!IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getAnalysis_Levels(), ecorePackage.getEInt(), "levels", null, 0, -1, Analysis.class,

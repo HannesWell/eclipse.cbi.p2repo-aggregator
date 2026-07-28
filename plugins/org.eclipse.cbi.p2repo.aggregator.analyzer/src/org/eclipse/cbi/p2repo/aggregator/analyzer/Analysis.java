@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getReleaseDate <em>Release Date</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getExclusion <em>Exclusion</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#isShowTags <em>Show Tags</em>}</li>
+ *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#isIgnoreMajorVersionDuplicates <em>Ignore Major Version Duplicates</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getTags <em>Tags</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getLevels <em>Levels</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getLayoutWidth <em>Layout Width</em>}</li>
@@ -121,6 +122,31 @@ public interface Analysis extends EObject {
 	 * @generated
 	 */
 	void setShowTags(boolean value);
+
+	/**
+	 * Returns the value of the '<em><b>Ignore Major Version Duplicates</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Whether to ignore duplicate IUs that differ by their major version.
+	 * <!-- end-model-doc -->
+	 * @return the value of the '<em>Ignore Major Version Duplicates</em>' attribute.
+	 * @see #setIgnoreMajorVersionDuplicates(boolean)
+	 * @see org.eclipse.cbi.p2repo.aggregator.analyzer.AnalyzerPackage#getAnalysis_IgnoreMajorVersionDuplicates()
+	 * @model dataType="org.eclipse.emf.ecore.xml.type.Boolean"
+	 * @generated
+	 */
+	boolean isIgnoreMajorVersionDuplicates();
+
+	/**
+	 * Sets the value of the '{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#isIgnoreMajorVersionDuplicates <em>Ignore Major Version Duplicates</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Ignore Major Version Duplicates</em>' attribute.
+	 * @see #isIgnoreMajorVersionDuplicates()
+	 * @generated
+	 */
+	void setIgnoreMajorVersionDuplicates(boolean value);
 
 	/**
 	 * Returns the value of the '<em><b>Tags</b></em>' attribute list.

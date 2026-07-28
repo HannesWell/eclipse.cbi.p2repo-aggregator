@@ -110,13 +110,22 @@ public interface AnalyzerPackage extends EPackage {
 	int ANALYSIS__SHOW_TAGS = 2;
 
 	/**
+	 * The feature id for the '<em><b>Ignore Major Version Duplicates</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES = 3;
+
+	/**
 	 * The feature id for the '<em><b>Tags</b></em>' attribute list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__TAGS = 3;
+	int ANALYSIS__TAGS = 4;
 
 	/**
 	 * The feature id for the '<em><b>Levels</b></em>' attribute list.
@@ -125,7 +134,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__LEVELS = 4;
+	int ANALYSIS__LEVELS = 5;
 
 	/**
 	 * The feature id for the '<em><b>Layout Width</b></em>' attribute.
@@ -134,7 +143,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__LAYOUT_WIDTH = 5;
+	int ANALYSIS__LAYOUT_WIDTH = 6;
 
 	/**
 	 * The feature id for the '<em><b>Layout Height</b></em>' attribute.
@@ -143,7 +152,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__LAYOUT_HEIGHT = 6;
+	int ANALYSIS__LAYOUT_HEIGHT = 7;
 
 	/**
 	 * The feature id for the '<em><b>Git Repository Filters</b></em>' attribute list.
@@ -152,7 +161,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__GIT_REPOSITORY_FILTERS = 7;
+	int ANALYSIS__GIT_REPOSITORY_FILTERS = 8;
 
 	/**
 	 * The feature id for the '<em><b>Aggregation</b></em>' reference.
@@ -161,7 +170,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__AGGREGATION = 8;
+	int ANALYSIS__AGGREGATION = 9;
 
 	/**
 	 * The feature id for the '<em><b>Contributions</b></em>' containment reference list.
@@ -170,7 +179,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS__CONTRIBUTIONS = 9;
+	int ANALYSIS__CONTRIBUTIONS = 10;
 
 	/**
 	 * The number of structural features of the '<em>Analysis</em>' class.
@@ -179,7 +188,7 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int ANALYSIS_FEATURE_COUNT = 10;
+	int ANALYSIS_FEATURE_COUNT = 11;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.ContributionAnalysisImpl <em>Contribution Analysis</em>}' class.
@@ -765,6 +774,17 @@ public interface AnalyzerPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getAnalysis_ShowTags();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#isIgnoreMajorVersionDuplicates <em>Ignore Major Version Duplicates</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Ignore Major Version Duplicates</em>'.
+	 * @see org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#isIgnoreMajorVersionDuplicates()
+	 * @see #getAnalysis()
+	 * @generated
+	 */
+	EAttribute getAnalysis_IgnoreMajorVersionDuplicates();
 
 	/**
 	 * Returns the meta object for the attribute list '{@link org.eclipse.cbi.p2repo.aggregator.analyzer.Analysis#getTags <em>Tags</em>}'.
@@ -1451,6 +1471,14 @@ public interface AnalyzerPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute ANALYSIS__SHOW_TAGS = eINSTANCE.getAnalysis_ShowTags();
+
+		/**
+		 * The meta object literal for the '<em><b>Ignore Major Version Duplicates</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES = eINSTANCE.getAnalysis_IgnoreMajorVersionDuplicates();
 
 		/**
 		 * The meta object literal for the '<em><b>Tags</b></em>' attribute list feature.

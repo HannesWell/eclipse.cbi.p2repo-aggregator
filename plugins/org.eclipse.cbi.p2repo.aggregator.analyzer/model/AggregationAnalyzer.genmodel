@@ -26,6 +26,8 @@
           ecoreFeature="ecore:EAttribute AggregationAnalyzer.ecore#//Analysis/exclusion"/>
       <genFeatures createChild="false" propertyDescription="Whether to show the tags as children in the editor"
           ecoreFeature="ecore:EAttribute AggregationAnalyzer.ecore#//Analysis/showTags"/>
+      <genFeatures createChild="false" propertyDescription="Whether to ignore duplicate IUs that differ by their major version"
+          ecoreFeature="ecore:EAttribute AggregationAnalyzer.ecore#//Analysis/ignoreMajorVersionDuplicates"/>
       <genFeatures children="true" createChild="false" propertyDescription="Tags that may be used with contribution analysis items"
           ecoreFeature="ecore:EAttribute AggregationAnalyzer.ecore#//Analysis/tags"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute AggregationAnalyzer.ecore#//Analysis/levels"/>

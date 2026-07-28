@@ -47,6 +47,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#getReleaseDate <em>Release Date</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#getExclusion <em>Exclusion</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#isShowTags <em>Show Tags</em>}</li>
+ *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#isIgnoreMajorVersionDuplicates <em>Ignore Major Version Duplicates</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#getTags <em>Tags</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#getLevels <em>Levels</em>}</li>
  *   <li>{@link org.eclipse.cbi.p2repo.aggregator.analyzer.impl.AnalysisImpl#getLayoutWidth <em>Layout Width</em>}</li>
@@ -127,6 +128,26 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 	 * @ordered
 	 */
 	protected static final int SHOW_TAGS_EFLAG = 1 << 0;
+
+	/**
+	 * The default value of the '{@link #isIgnoreMajorVersionDuplicates() <em>Ignore Major Version Duplicates</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isIgnoreMajorVersionDuplicates()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final boolean IGNORE_MAJOR_VERSION_DUPLICATES_EDEFAULT = false;
+
+	/**
+	 * The flag representing the value of the '{@link #isIgnoreMajorVersionDuplicates() <em>Ignore Major Version Duplicates</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isIgnoreMajorVersionDuplicates()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final int IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG = 1 << 1;
 
 	/**
 	 * The cached value of the '{@link #getTags() <em>Tags</em>}' attribute list.
@@ -485,6 +506,8 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 				return getExclusion();
 			case AnalyzerPackage.ANALYSIS__SHOW_TAGS:
 				return isShowTags();
+			case AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES:
+				return isIgnoreMajorVersionDuplicates();
 			case AnalyzerPackage.ANALYSIS__TAGS:
 				return getTags();
 			case AnalyzerPackage.ANALYSIS__LEVELS:
@@ -523,6 +546,9 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 				return;
 			case AnalyzerPackage.ANALYSIS__SHOW_TAGS:
 				setShowTags((Boolean) newValue);
+				return;
+			case AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES:
+				setIgnoreMajorVersionDuplicates((Boolean) newValue);
 				return;
 			case AnalyzerPackage.ANALYSIS__TAGS:
 				getTags().clear();
@@ -572,6 +598,9 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 			case AnalyzerPackage.ANALYSIS__SHOW_TAGS:
 				setShowTags(SHOW_TAGS_EDEFAULT);
 				return;
+			case AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES:
+				setIgnoreMajorVersionDuplicates(IGNORE_MAJOR_VERSION_DUPLICATES_EDEFAULT);
+				return;
 			case AnalyzerPackage.ANALYSIS__TAGS:
 				getTags().clear();
 				return;
@@ -613,6 +642,9 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 				return EXCLUSION_EDEFAULT == null ? exclusion != null : !EXCLUSION_EDEFAULT.equals(exclusion);
 			case AnalyzerPackage.ANALYSIS__SHOW_TAGS:
 				return ((eFlags & SHOW_TAGS_EFLAG) != 0) != SHOW_TAGS_EDEFAULT;
+			case AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES:
+				return ((eFlags
+						& IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG) != 0) != IGNORE_MAJOR_VERSION_DUPLICATES_EDEFAULT;
 			case AnalyzerPackage.ANALYSIS__TAGS:
 				return tags != null && !tags.isEmpty();
 			case AnalyzerPackage.ANALYSIS__LEVELS:
@@ -649,6 +681,8 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 		result.append(exclusion);
 		result.append(", showTags: ");
 		result.append((eFlags & SHOW_TAGS_EFLAG) != 0);
+		result.append(", ignoreMajorVersionDuplicates: ");
+		result.append((eFlags & IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG) != 0);
 		result.append(", tags: ");
 		result.append(tags);
 		result.append(", levels: ");
@@ -702,6 +736,34 @@ public class AnalysisImpl extends MinimalEObjectImpl.Container implements Analys
 		if (eNotificationRequired())
 			eNotify(new ENotificationImpl(this, Notification.SET, AnalyzerPackage.ANALYSIS__SHOW_TAGS, oldShowTags,
 					newShowTags));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public boolean isIgnoreMajorVersionDuplicates() {
+		return (eFlags & IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG) != 0;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public void setIgnoreMajorVersionDuplicates(boolean newIgnoreMajorVersionDuplicates) {
+		boolean oldIgnoreMajorVersionDuplicates = (eFlags & IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG) != 0;
+		if (newIgnoreMajorVersionDuplicates)
+			eFlags |= IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG;
+		else
+			eFlags &= ~IGNORE_MAJOR_VERSION_DUPLICATES_EFLAG;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET,
+					AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES, oldIgnoreMajorVersionDuplicates,
+					newIgnoreMajorVersionDuplicates));
 	}
 
 	/**

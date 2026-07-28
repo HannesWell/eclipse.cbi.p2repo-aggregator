@@ -68,6 +68,7 @@ public class AnalysisItemProvider extends AnalyzerItemProviderAdapter
 			addReleaseDatePropertyDescriptor(object);
 			addExclusionPropertyDescriptor(object);
 			addShowTagsPropertyDescriptor(object);
+			addIgnoreMajorVersionDuplicatesPropertyDescriptor(object);
 			addTagsPropertyDescriptor(object);
 			addLevelsPropertyDescriptor(object);
 			addLayoutWidthPropertyDescriptor(object);
@@ -119,6 +120,21 @@ public class AnalysisItemProvider extends AnalyzerItemProviderAdapter
 						getResourceLocator(), getString("_UI_Analysis_showTags_feature"),
 						getString("_UI_Analysis_showTags_description"), AnalyzerPackage.Literals.ANALYSIS__SHOW_TAGS,
 						true, false, false, ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE, null, null));
+	}
+
+	/**
+	 * This adds a property descriptor for the Ignore Major Version Duplicates feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void addIgnoreMajorVersionDuplicatesPropertyDescriptor(Object object) {
+		itemPropertyDescriptors
+				.add(createItemPropertyDescriptor(((ComposeableAdapterFactory) adapterFactory).getRootAdapterFactory(),
+						getResourceLocator(), getString("_UI_Analysis_ignoreMajorVersionDuplicates_feature"),
+						getString("_UI_Analysis_ignoreMajorVersionDuplicates_description"),
+						AnalyzerPackage.Literals.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES, true, false, false,
+						ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE, null, null));
 	}
 
 	/**
@@ -322,6 +338,7 @@ public class AnalysisItemProvider extends AnalyzerItemProviderAdapter
 			case AnalyzerPackage.ANALYSIS__RELEASE_DATE:
 			case AnalyzerPackage.ANALYSIS__EXCLUSION:
 			case AnalyzerPackage.ANALYSIS__SHOW_TAGS:
+			case AnalyzerPackage.ANALYSIS__IGNORE_MAJOR_VERSION_DUPLICATES:
 			case AnalyzerPackage.ANALYSIS__LEVELS:
 			case AnalyzerPackage.ANALYSIS__LAYOUT_WIDTH:
 			case AnalyzerPackage.ANALYSIS__LAYOUT_HEIGHT:

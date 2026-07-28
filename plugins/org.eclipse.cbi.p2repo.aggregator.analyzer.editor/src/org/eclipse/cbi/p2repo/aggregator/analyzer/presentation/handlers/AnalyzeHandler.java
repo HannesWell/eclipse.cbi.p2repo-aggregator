@@ -421,12 +421,35 @@ public class AnalyzeHandler extends BaseHandler {
 			Map<String, List<InstallableUnitAnalysis>> ius = new TreeMap<>();
 			analysis.getContributions().stream().flatMap(c -> c.getInstallableUnits().stream()).forEach(iu -> {
 				IInstallableUnit installableUnit = iu.getInstallableUnit();
-				String id = installableUnit.getId();
-				installableUnit.getVersion();
-				ius.computeIfAbsent(id, i -> new ArrayList<>()).add(iu);
+				if (!installableUnit.getArtifacts().isEmpty()) {
+					String id = installableUnit.getId();
+					installableUnit.getVersion();
+					ius.computeIfAbsent(id, i -> new ArrayList<>()).add(iu);
+				}
 			});
 
-			ius.entrySet().removeIf(e -> e.getValue().size() == 1);
+			var ignoreMajorVersionDuplicates = analysis.isIgnoreMajorVersionDuplicates();
+			ius.entrySet().removeIf(e -> {
+				var iuVersions = e.getValue();
+				if (iuVersions.size() == 1) {
+					return true;
+				}
+
+				if (!ignoreMajorVersionDuplicates) {
+					return false;
+				}
+
+				var versions = new TreeMap<Comparable<?>, List<InstallableUnitAnalysis>>();
+				for (var iuVersion : iuVersions) {
+					Version version = iuVersion.getInstallableUnit().getVersion();
+					if (version.getSegmentCount() < 1) {
+						return false;
+					}
+					versions.computeIfAbsent(version.getSegment(0), it -> new ArrayList<>()).add(iuVersion);
+				}
+
+				return !versions.values().stream().anyMatch(it -> it.size() > 1);
+			});
 
 			Comparator<InstallableUnitAnalysis> compareVersion = new Comparator<InstallableUnitAnalysis>() {
 				@Override
