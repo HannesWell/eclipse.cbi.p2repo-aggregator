@@ -11,6 +11,7 @@
 
 package org.eclipse.cbi.p2repo.aggregator.util;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +29,8 @@ import org.eclipse.emf.edit.provider.IItemLabelProvider;
  */
 public class SortCommand<T> extends AbstractCommand {
 
-	class LabelComparator implements Comparator<T> {
+	private static class LabelComparator implements Comparator<Object> {
+		private static final Collator COLLATOR = Collator.getInstance();
 
 		private final IItemLabelProvider labelProvider;
 
@@ -37,7 +39,7 @@ public class SortCommand<T> extends AbstractCommand {
 		}
 
 		@Override
-		public int compare(T o1, T o2) {
+		public int compare(Object o1, Object o2) {
 			if (o1 == null) {
 				if (o2 == null)
 					return 0;
@@ -45,7 +47,7 @@ public class SortCommand<T> extends AbstractCommand {
 			} else if (o2 == null)
 				return 1;
 			else {
-				return labelProvider.getText(o1).compareTo(labelProvider.getText(o2));
+				return COLLATOR.compare(labelProvider.getText(o1), labelProvider.getText(o2));
 			}
 		}
 	};
