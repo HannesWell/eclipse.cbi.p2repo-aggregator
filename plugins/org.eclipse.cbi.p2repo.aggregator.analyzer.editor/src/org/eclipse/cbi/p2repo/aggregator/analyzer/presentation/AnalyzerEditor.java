@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -101,6 +102,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.ConnectionRouter;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -2567,7 +2569,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 		});
 
 		Map<ContributionAnalysis, AtomicInteger> usageCounts = new HashMap<>();
-		AtomicLong oldestLastModified = new AtomicLong(System.currentTimeMillis());
+		AtomicLong oldestLastModified = new AtomicLong(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(90));
 
 		class MyContentProvider implements IGraphEntityRelationshipContentProvider {
 
@@ -2802,7 +2804,12 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 			}
 
 			@Override
-			public Color getNodeHighlightColor(Object entity) {
+			public Color getNodeForegroundHighlightColor(Object entity) {
+				return null;
+			}
+
+			@Override
+			public Color getNodeBackgroundHighlightColor(Object entity) {
 				return null;
 			}
 
@@ -2830,7 +2837,7 @@ public class AnalyzerEditor extends MultiPageEditorPart implements IEditingDomai
 				if (entity instanceof ContributionAnalysis) {
 					Contribution contribution = ((ContributionAnalysis) entity).getContribution();
 					if (contribution != null && !contribution.isEnabled()) {
-						RGB rgb = graph.LIGHT_BLUE.getRGB();
+						RGB rgb = ColorConstants.lightBlue.getRGB();
 						return ExtendedColorRegistry.INSTANCE.getColor(null, null, URI.createURI("color://rgb/" + //
 								(rgb.red + (255 - rgb.red) * 7 / 8) + "/" + //
 								(rgb.blue + (255 - rgb.blue) * 2 / 3) + "/" + //
