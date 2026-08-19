@@ -19,12 +19,10 @@ SPDX-License-Identifier: EPL-2.0
     <groupId>org.eclipse.cbi</groupId>
     <artifactId>org.eclipse.cbi.p2repo.releng.parent</artifactId>
     <version>1.1.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../../..</relativePath>
   </parent>
 
-  <groupId>org.eclipse.cbi</groupId>
   <artifactId>org.eclipse.cbi.promote</artifactId>
-  <version>1.1.0-SNAPSHOTT</version>
   <packaging>pom</packaging>
 
   <properties>

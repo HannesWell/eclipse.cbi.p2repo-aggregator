@@ -5,3 +5,6 @@ testarea/
 build.log
 docs/.project
 docs/.settings/
+
+.polyglot.*
+pom.tycho

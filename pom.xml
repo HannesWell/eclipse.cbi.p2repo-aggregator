@@ -20,32 +20,11 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.analyzer.edit</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.analyzer.editor</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.analyzer</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.edit</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.editor</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.engine.maven</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.engine</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.legacy.ui</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator.legacy</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.aggregator</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.cli</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.p2.edit</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.p2.maven</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.p2</module>
-    <module>../../plugins/org.eclipse.cbi.p2repo.util</module>
-    <module>../../plugins/org.eclipse.cbi.tycho</module>
-    <module>../../tests/org.eclipse.cbi.p2repo.p2.tests</module>
-    <module>../../features/org.eclipse.cbi.p2repo.aggregator.analyzer.editor.feature</module>
-    <module>../../features/org.eclipse.cbi.p2repo.aggregator.dependencies.feature</module>
-    <module>../../features/org.eclipse.cbi.p2repo.aggregator.editor.feature</module>
-    <module>../../features/org.eclipse.cbi.p2repo.aggregator.engine.feature</module>
-    <module>../../features/org.eclipse.cbi.p2repo.cli.product.feature</module>
-    <module>../../features/org.eclipse.cbi.p2repo.tests.feature</module>
-    <module>../org.eclipse.cbi.p2repo.site</module>
-    <module>../../products/org.eclipse.cbi.p2repo.cli.product</module>
-    <module>../org.eclipse.cbi.p2repo.releng.target</module>
+    <module>plugins</module>
+    <module>tests</module>
+    <module>features</module>
+    <module>releng</module>
+    <module>products</module>
   </modules>
 
   <properties>
@@ -78,6 +57,7 @@
     <dirtyWorkingTree>warning</dirtyWorkingTree>
 
     <comparatorMode>warn</comparatorMode>
+    <p2.repository.includeAllSources>false</p2.repository.includeAllSources>
 
   </properties>
 
@@ -116,7 +96,7 @@
         </property>
       </activation>
       <modules>
-        <module>promotion</module>
+        <module>releng/org.eclipse.cbi.p2repo.releng.parent/promotion</module>
       </modules>
     </profile>
 
@@ -192,6 +172,17 @@
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho-version}</version>
+          <configuration>
+            <includeAllSources>${p2.repository.includeAllSources}</includeAllSources>
+          </configuration>
+          <executions>
+            <execution>
+              <goals><goal>assemble-repository</goal></goals>
+              <configuration>
+                <includeAllDependencies></includeAllDependencies>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
