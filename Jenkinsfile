@@ -1,6 +1,6 @@
 pipeline {
   options {
-    quietPeriod(60)
+    quietPeriod(env.BRANCH_NAME == 'main' ? 60 : 5)
     timeout(time: 15, unit: 'MINUTES')
     buildDiscarder(logRotator(numToKeepStr: env.BRANCH_NAME == 'main' ? '10' : '2'))
     disableConcurrentBuilds()
@@ -101,17 +101,17 @@ ARCHIVE=${params.ARCHIVE}
 
   post {
     failure {
-      sendBuildStatus('Build Failure')
+      sendBuildStatusMail('Build Failure')
     }
 
     fixed {
-      sendBuildStatus('Back to normal')
+      sendBuildStatusMail('Back to normal')
     }
 
   }
 }  
 
-def sendBuildStatus(String summary) {
+def sendBuildStatusMail(String summary) {
   if (env.BRANCH_NAME == 'main') {
     mail to: 'ed.merks@gmail.com',
     subject: "[CBI p2 Aggregator] ${summary} ${currentBuild.fullDisplayName}",
