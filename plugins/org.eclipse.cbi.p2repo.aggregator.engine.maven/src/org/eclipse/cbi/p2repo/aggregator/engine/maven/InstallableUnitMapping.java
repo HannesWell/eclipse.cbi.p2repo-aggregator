@@ -341,13 +341,13 @@ public class InstallableUnitMapping implements IInstallableUnit {
 
 		pom.setDependencies(result);
 
-		Map<String, String> iuProperties = new HashMap<String, String>(installableUnit.getProperties());
-		String name = extractProperty(iuProperties, IInstallableUnit.PROP_NAME, installableUnit.getId());
+		Map<String, String> iuProperties = installableUnit.getProperties();
+		String name = resolveProperty(iuProperties, IInstallableUnit.PROP_NAME, installableUnit.getId());
 		if (name != null && !name.isBlank()) {
 			pom.setName(name);
 		}
 
-		String description = extractProperty(iuProperties, IInstallableUnit.PROP_DESCRIPTION, installableUnit.getId());
+		String description = resolveProperty(iuProperties, IInstallableUnit.PROP_DESCRIPTION, installableUnit.getId());
 		if (description != null && !description.isBlank()) {
 			pom.setDescription(description);
 		} else if (name != null && !name.isBlank()) {
@@ -492,12 +492,12 @@ public class InstallableUnitMapping implements IInstallableUnit {
 		return profiles;
 	}
 
-	private String extractProperty(Map<String, String> iuProperties, String key, String iuId) {
-		String value = iuProperties.remove(key);
+	private String resolveProperty(Map<String, String> iuProperties, String key, String iuId) {
+		String value = iuProperties.get(key);
 		if (value != null) {
 			if (value.startsWith("%")) {
 				String localizedKey = "df_LT." + value.substring(1);
-				String localizedValue = iuProperties.remove(localizedKey);
+				String localizedValue = iuProperties.get(localizedKey);
 
 				if (localizedValue != null) {
 					value = localizedValue;
