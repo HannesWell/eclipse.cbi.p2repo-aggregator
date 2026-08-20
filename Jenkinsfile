@@ -1,12 +1,13 @@
 pipeline {
-  agent any
-
-   options {
-    buildDiscarder(logRotator(numToKeepStr: '10'))
+  options {
+    quietPeriod(60)
+    timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: env.BRANCH_NAME == 'main' ? '10' : '2'))
     disableConcurrentBuilds()
-    skipDefaultCheckout true
   }
-
+  agent {
+    label 'basic'
+  }
   tools {
     maven 'apache-maven-latest'
     jdk 'temurin-jdk21-latest'
@@ -28,7 +29,7 @@ pipeline {
 
     booleanParam(
       name: 'PROMOTE',
-      defaultValue: false,
+      defaultValue: env.BRANCH_NAME == 'main',
       description: 'Whether to promote the build to the download server.'
     )
 
@@ -48,31 +49,10 @@ BUILD_TYPE=${params.BUILD_TYPE}
 PROMOTE=${params.PROMOTE}
 ARCHIVE=${params.ARCHIVE}
 """.trim()
+          env.BUILD_TYPE = params.BUILD_TYPE
+          env.PROMOTE = params.PROMOTE
           echo description
           currentBuild.description = description.replace("\n", "<br/>")
-          env.PROMOTE = params.PROMOTE
-          env.BUILD_TYPE = params.BUILD_TYPE
-        }
-      }
-    }
-
-    stage('Git Checkout') {
-      steps {
-        script {
-          def gitVariables = checkout(
-            poll: false,
-            scm: [
-              $class: 'GitSCM',
-              branches: [[name: '*/main']],
-              doGenerateSubmoduleConfigurations: false,
-              extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'p2repo-aggregator']],
-              submoduleCfg: [],
-              userRemoteConfigs: [[url: 'https://github.com/eclipse-cbi/p2repo-aggregator.git']]
-            ]
-          )
-
-          echo "$gitVariables"
-          env.GIT_COMMIT = gitVariables.GIT_COMMIT
         }
       }
     }
@@ -80,28 +60,29 @@ ARCHIVE=${params.ARCHIVE}
     stage('Build Tools and Products') {
       steps {
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
-          dir('p2repo-aggregator/releng/org.eclipse.cbi.p2repo.releng.parent') {
-            sh '''
-              pwd
-              if [[ $PROMOTE == false ]]; then
-                promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
-              fi
-              mvn \
-                --no-transfer-progress\
-                $promotion_argument \
-                -Dorg.eclipse.storage.user=genie.cbi \
-                -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL \
-                -Dorg.eclipse.download.location.relative=$PUBLISH_LOCATION \
-                -Dorg.eclipse.justj.p2.manager.relative= \
-                -Dbuild.type=$BUILD_TYPE \
-                -Dgit.commit=$GIT_COMMIT \
-                -Dbuild.id=$BUILD_NUMBER \
-                -DskipTests=false \
-                -Peclipse-sign \
-                clean \
-                verify
-              '''
-          }
+          sh '''
+            pwd
+            if [[ $PROMOTE == true ]]; then
+              sign_argument='-Peclipse-sign'
+            else
+              promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
+              sign_argument=''
+            fi
+            mvn \
+              --no-transfer-progress\
+              $promotion_argument \
+              -Dorg.eclipse.storage.user=genie.cbi \
+              -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL \
+              -Dorg.eclipse.download.location.relative=$PUBLISH_LOCATION \
+              -Dorg.eclipse.justj.p2.manager.relative= \
+              -Dbuild.type=$BUILD_TYPE \
+              -Dgit.commit=$GIT_COMMIT \
+              -Dbuild.id=$BUILD_NUMBER \
+              -DskipTests=false \
+              $sign_argument \
+              clean \
+              verify
+            '''
         }
       }
     }
@@ -113,28 +94,28 @@ ARCHIVE=${params.ARCHIVE}
         }
       }
       steps {
-        archiveArtifacts 'p2repo-aggregator/**'
+        archiveArtifacts '**'
       }
     }
   }
 
   post {
     failure {
-      mail to: 'ed.merks@gmail.com',
-      subject: "[CBI p2 Aggregator] Build Failure ${currentBuild.fullDisplayName}",
-      mimeType: 'text/html',
-      body: "Project: ${env.JOB_NAME}<br/>Build Number: ${env.BUILD_NUMBER}<br/>Build URL: ${env.BUILD_URL}<br/>Console: ${env.BUILD_URL}/console"
+      sendBuildStatus('Build Failure')
     }
 
     fixed {
-      mail to: 'ed.merks@gmail.com',
-      subject: "[CBI p2 Aggregator] Back to normal ${currentBuild.fullDisplayName}",
-      mimeType: 'text/html',
-      body: "Project: ${env.JOB_NAME}<br/>Build Number: ${env.BUILD_NUMBER}<br/>Build URL: ${env.BUILD_URL}<br/>Console: ${env.BUILD_URL}/console"
+      sendBuildStatus('Back to normal')
     }
 
-    cleanup {
-      deleteDir()
-    }
+  }
+}  
+
+def sendBuildStatus(String summary) {
+  if (env.BRANCH_NAME == 'main') {
+    mail to: 'ed.merks@gmail.com',
+    subject: "[CBI p2 Aggregator] ${summary} ${currentBuild.fullDisplayName}",
+    mimeType: 'text/html',
+    body: "Project: ${env.JOB_NAME}<br/>Build Number: ${env.BUILD_NUMBER}<br/>Build URL: ${env.BUILD_URL}<br/>Console: ${env.BUILD_URL}/console"
   }
 }
